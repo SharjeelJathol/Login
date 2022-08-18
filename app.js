@@ -1,10 +1,7 @@
-const {
-    dir
-} = require("console");
+const {dir} = require("console");
 const express = require("express");
-const {
-    MongoClient
-} = require("mongodb");
+const {MongoClient} = require("mongodb");
+const bcrypt=require('bcryptjs')
 
 const dotenv=require('dotenv')
 dotenv.config({ path: './config.env' });
@@ -48,7 +45,7 @@ app.post('/login', (req, res) => {
                 _id: userInfo._id
             })
             if (result) {
-                if (userInfo.password === result.password)
+                if (bcrypt.compareSync(userInfo.password, result.password))
                     throw 'You are logged in'
                 else
                     throw 'Password incorrect'
