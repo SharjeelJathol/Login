@@ -2,11 +2,13 @@ const {dir} = require("console");
 const express = require("express");
 const {MongoClient} = require("mongodb");
 const bcrypt=require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
 const dotenv=require('dotenv')
 dotenv.config({ path: './config.env' });
 
 const app = express();
+
 app.use(
     express.urlencoded({
         extended: true,
@@ -46,7 +48,15 @@ app.post('/login', (req, res) => {
             })
             if (result) {
                 if (bcrypt.compareSync(userInfo.password, result.password))
+                {
+                    const token=jwt.sign({id:userInfo._id, ip:req.ip}, process.env.PRIVATE_KEY, {algorithm:process.env.ALGORITHM})
+                    const cookiesOptions={
+                        expires: new Date(Date.now()+ process.env.EXPIRES_IN *24*60*60*1000),
+                        httpOnly:true
+                    }
+                    res.cookie('jwt', token, cookiesOptions)
                     throw 'You are logged in'
+                }
                 else
                     throw 'Password incorrect'
             } else
